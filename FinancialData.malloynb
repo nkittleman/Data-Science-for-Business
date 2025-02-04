@@ -1,0 +1,155 @@
+>>>malloy
+source: SEC is duckdb.table('FinancialData.csv') extend {
+    dimension: SICCode is SIC::string 
+    dimension: FY is FiscalYear::string
+    dimension: FYE is FiscalYearEnd::string
+}
+>>>markdown
+Which company has the most assets as of FY2023?
+>>>malloy
+run: SEC -> {
+    group_by: Industry, Company
+    aggregate: Assets is sum(Assets)
+    where: FY = 2023
+}
+>>>markdown
+How many companies are in this dataset?
+>>>malloy
+run: SEC -> {
+    aggregate: Company is count(Company)
+}
+>>>markdown
+Which fiscal year end dates are the most popular?
+>>>malloy
+run: SEC -> {
+    group_by: FYE
+    aggregate: Filings is sum(FiscalYearEnd)
+}
+>>>markdown
+How many industries are there? How many companies are in each industry?
+>>>malloy
+run: SEC -> {
+    group_by: Industry
+    aggregate: Companies is count(Company)
+}
+>>>malloy
+run: SEC -> {
+    aggregate: Industry is count(Industry)
+}
+>>>markdown
+How many industry classifications are there? How many companies are in each classification?
+>>>malloy
+run: SEC -> {
+    group_by: IndustryClassification
+    aggregate: Companies is count(Company)
+    limit: 100
+}
+>>>malloy
+run: SEC -> {
+    aggregate: Sub_Industries is count(IndustryClassification)
+}
+>>>markdown
+What are the top 10 most profitable companies between 2020 and 2023?
+>>>malloy
+run: SEC -> {
+    group_by: Company
+    aggregate: Profit is sum(NetIncome)
+    order_by: Profit desc
+    limit: 10
+}
+>>>markdown
+What are the top 10 least profitable companies between 2020 and 2023?
+>>>malloy
+run: SEC -> {
+    group_by: Company
+    aggregate: Profit is sum(NetIncome)
+    order_by: Profit asc
+    limit: 10
+}
+>>>markdown
+What are the top 10 companies with the highest average profit margin between 2020 and 2023?
+>>>malloy
+run: SEC -> {
+    group_by: Company
+    aggregate: Avg_PM is avg(ProfitMargin)
+    order_by: Avg_PM desc
+    limit: 10
+}
+>>>markdown
+What are the top 10 companies with the lowest average profit margin between 2020 and 2023?
+>>>malloy
+run: SEC -> {
+    group_by: Company
+    aggregate: Avg_PM is avg(ProfitMargin)
+    order_by: Avg_PM asc
+    limit: 10
+}
+>>>markdown
+Which companies have generated the most revenue between 2020 and 2023?
+>>>malloy
+run: SEC -> {
+    group_by: Company
+    aggregate: Total_Revenue is sum(Revenue)
+    order_by: Total_Revenue desc
+    limit: 10
+}
+>>>markdown
+How many SIC Codes are there? What are the most popular SIC Codes?
+>>>malloy
+run: SEC -> {
+    aggregate: Total_SIC_Codes is count(SICCode)
+}
+>>>malloy
+run: SEC -> {
+    group_by: Industry, IndustryClassification, SICCode
+    aggregate: Companies is count(Company)
+}
+>>>markdown
+What is the most profitable industry, on average? What is the most profitable industry classification, on average?
+>>>malloy
+run: SEC -> {
+    group_by: Industry
+    aggregate: Profit is avg(NetIncome)
+    order_by: Profit desc
+}
+>>>malloy
+run: SEC -> {
+    group_by: IndustryClassification
+    aggregate: Profit is avg(NetIncome)
+    order_by: Profit desc
+    limit: 10
+}
+>>>markdown
+What are the top 5 most profitable companies within each industry? Within each industry classification?
+>>>malloy
+run: SEC -> {
+    group_by: Industry
+    nest: Most_Profitable_Companies is {
+        group_by: Company
+        aggregate: Profit is sum(NetIncome)
+        limit: 5
+    }
+}
+>>>malloy
+run: SEC -> {
+    group_by: IndustryClassification
+    aggregate: Avg_Profit is avg(NetIncome)
+    nest: Most_Profitable_Companies is {
+        group_by: Company
+        aggregate: Profit is sum(NetIncome)
+        limit: 5
+    }
+}
+>>>markdown
+Which industry has the most assets, on average?
+>>>malloy
+run: SEC -> {
+    group_by: Industry
+    aggregate: Avg_Assets is avg(Assets)
+}
+>>>malloy
+run: SEC -> {
+    group_by: IndustryClassification
+    aggregate: Avg_Assets is avg(Assets)
+    limit: 10
+}
